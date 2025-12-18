@@ -33,5 +33,27 @@ tasks.withType<KotlinCompile> {
 	}
 }
 
+tasks.register<Exec>("npmInstall") {
+    workingDir = file("./ui")
+    commandLine("npm","install")
+}
 
-// TODO: your code starts here
+tasks.register<Exec>("compileUi") {
+    dependsOn("npmInstall")
+    workingDir = file("./ui")
+    commandLine("npm","run","build")
+}
+
+tasks.register<Copy>("copyUi") {
+    dependsOn("compileUi")
+    from("ui/dist")
+    into("src/main/resources")
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
+    dependsOn("copyUi")
+}
+
+tasks.named<ProcessResources>("processResources") {
+    dependsOn("copyUi")
+}
